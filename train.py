@@ -1,3 +1,5 @@
+# -*- coding: utf8 -*-
+
 import os
 import sys
 import argparse
@@ -111,6 +113,9 @@ def main():
     # elif args.dataset=='flickr':
     if args.dataset=='flickr':
         anchors = '29,26,  55,58,  137,71,  82,121,  124,205,  204,132,  209,263,  369,169,  352,294'
+    elif args.dataset == 'rsvg':
+        #anchors = '10,36, 16,15, 18,34, 30,24, 33,60, 37,36, 55,47, 67,74, 171,111'
+        anchors = '19,44, 19,20, 35,34, 37,72, 57,48, 73,123, 76,75, 137,103, 202,222'
     else:
         anchors = '10,13,  16,30,  33,23,  30,61,  62,45,  59,119,  116,90,  156,198,  373,326'
     anchors = [float(x) for x in anchors.split(',')]
@@ -154,7 +159,7 @@ def main():
                          split_root=args.split_root,
                          dataset=args.dataset,
                          testmode=True,
-                         split='val',
+                         split='test',
                          imsize = args.size,
                          transform=input_transform,
                          max_query_len=args.time)
@@ -497,9 +502,9 @@ def test_epoch(val_loader, model, mode='test'):
             torch.clamp(target_bbox[:,:2], min=0), torch.clamp(target_bbox[:,2], max=img_np.shape[3]), torch.clamp(target_bbox[:,3], max=img_np.shape[2])
 
         iou = bbox_iou(pred_bbox, target_bbox, x1y1x2y2=True)
-        accu_center = np.sum(np.array((target_gi == np.array(pred_gi)) * (target_gj == np.array(pred_gj)), dtype=float))/1
-        accu = np.sum(np.array((iou.data.cpu().numpy()>0.5),dtype=float))/1
-
+        accu_center = np.sum(np.array((target_gi == np.array(pred_gi)) * (target_gj == np.array(pred_gj)), dtype=float))/imgs.size(0)
+        accu = np.sum(np.array((iou.data.cpu().numpy()>0.5),dtype=float))/imgs.size(0)
+        #print(acc)
         acc.update(accu, imgs.size(0))
         acc_center.update(accu_center, imgs.size(0))
         miou.update(torch.mean(iou).item(), imgs.size(0))

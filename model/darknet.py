@@ -274,8 +274,9 @@ def create_modules(module_defs):
             num_classes = int(module_def["classes"])
             img_height = int(hyperparams["height"])
             # Define detection layer
-            # yolo_layer = YOLOLayer(anchors, num_classes, img_height)
-            yolo_layer = YOLOLayer(anchors, num_classes, 256)
+            #sunyuxi
+            yolo_layer = YOLOLayer(anchors, num_classes, img_height)
+            #yolo_layer = YOLOLayer(anchors, num_classes, 256)
             modules.add_module("yolo_%d" % i, yolo_layer)
         # Register module list and number of output filters
         module_list.append(modules)
@@ -331,7 +332,9 @@ class YOLOLayer(nn.Module):
         grid_x = torch.arange(nG).repeat(nG, 1).view([1, 1, nG, nG]).type(FloatTensor)
         grid_y = torch.arange(nG).repeat(nG, 1).t().view([1, 1, nG, nG]).type(FloatTensor)
         # scaled_anchors = FloatTensor([(a_w / stride, a_h / stride) for a_w, a_h in self.anchors])
-        scaled_anchors = FloatTensor([(a_w / (416 / nG), a_h / (416 / nG)) for a_w, a_h in self.anchors])
+        #sunyuxi
+        #scaled_anchors = FloatTensor([(a_w / (416 / nG), a_h / (416 / nG)) for a_w, a_h in self.anchors])
+        scaled_anchors = FloatTensor([(a_w / stride, a_h / stride) for a_w, a_h in self.anchors])
         anchor_w = scaled_anchors[:, 0:1].view((1, nA, 1, 1))
         anchor_h = scaled_anchors[:, 1:2].view((1, nA, 1, 1))
 
@@ -423,8 +426,9 @@ class YOLOLayer(nn.Module):
 
 class Darknet(nn.Module):
     """YOLOv3 object detection model"""
-
-    def __init__(self, config_path='./model/yolov3.cfg', img_size=416, obj_out=False):
+    #sunyuxi
+    #def __init__(self, config_path='./model/yolov3.cfg', img_size=416, obj_out=False):
+    def __init__(self, config_path='./model/yolov3.cfg', img_size=1024, obj_out=False):
         super(Darknet, self).__init__()
         self.config_path = config_path
         self.obj_out = obj_out
@@ -436,6 +440,8 @@ class Darknet(nn.Module):
         self.loss_names = ["x", "y", "w", "h", "conf", "cls", "recall", "precision"]
 
     def forward(self, x, targets=None):
+        assert targets is None
+        
         batch = x.shape[0]
         is_training = targets is not None
         output, output_obj = [], []
